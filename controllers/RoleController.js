@@ -1,7 +1,6 @@
-const PurchaseOrderService = require("../services/PurchaseOrderService")();
-const LogService = require("../services/LogService")("PurchaseOrderController");
+const RoleService = require("../services/RoleService")();
+const LogService = require("../services/LogService")("RoleController");
 const { Op } = require("sequelize");
-const db = require("../models");
 
 module.exports = () => {
   /**
@@ -13,8 +12,8 @@ module.exports = () => {
   const create = async (req, res, next) => {
     try {
       const payload = req.body;
-      const order = await PurchaseOrderService.createPurchaseOrder(payload);
-      return res.status(200).send(order);
+      const profile = await RoleService.createRole(payload);
+      return res.status(200).send(profile);
     } catch (error) {
       return res.status(400).send(error);
     }
@@ -27,7 +26,7 @@ module.exports = () => {
    * @param {*} next
    */
   const read = async (req, res, next) => {
-    const { q, orderId } = req.query;
+    const { q } = req.query;
     const where = {};
 
     let { limit, page } = req.query;
@@ -36,38 +35,40 @@ module.exports = () => {
     if (q) {
       where[Op.or] = [
         {
-          name: {
+          contactName: {
+            [Op.like]: `%${q}%`,
+          },
+        },
+        {
+          organisationName: {
+            [Op.like]: `%${q}%`,
+          },
+        },
+        {
+          phone: {
             [Op.like]: `%${q}%`,
           },
         },
       ];
     }
 
-    if (orderId) {
-      where.id = orderId;
+    if (!limit) {
+      limit = 5;
     }
+    if (!page) {
+      page = 1;
+    }
+
+    // type casting
+    page = +page;
+    limit = +limit;
+
+    offset = (page - 1) * limit;
+
     try {
-      const order = await PurchaseOrderService.readPurchaseOrder(
-        limit,
-        page,
-        where,
-        [
-          {
-            model: db.Vendors,
-          },
-          {
-            model: db.CompanyProfile,
-          },
-          {
-            model: db.PurchaseOrderItems,
-          },
-          {
-            model: db.PurchaseOrderTerms,
-          },
-        ]
-      );
-      LogService.logInfo(JSON.stringify(order));
-      return res.status(200).send(order);
+      const profile = await RoleService.readRole(limit, offset, where);
+      LogService.logInfo(JSON.stringify(profile));
+      return res.status(200).send(profile);
     } catch (error) {
       LogService.logError(error);
       return res.status(400).send(error);
@@ -85,11 +86,8 @@ module.exports = () => {
       const payload = req.body;
       const { id } = req.params;
       const where = { id };
-      const purchase = await PurchaseOrderService.updatePurchaseOrder(
-        payload,
-        where
-      );
-      return res.status(200).send(purchase);
+      const profile = await RoleService.updateRole(payload, where);
+      return res.status(200).send(profile);
     } catch (error) {
       return res.status(400).send(error);
     }
@@ -97,15 +95,15 @@ module.exports = () => {
 
   /**
    *
-   * @param {*} reqs
+   * @param {*} req
    * @param {*} res
    * @param {*} next
    */
   const destroy = async (req, res, next) => {
     try {
       const { id } = req.params;
-      const purchase = await PurchaseOrderService.deletePurchaseOrder(id);
-      return res.status(200).send(purchase);
+      const profile = await RoleService.deleteRole(id);
+      return res.status(200).send(profile);
     } catch (error) {
       return res.status(400).send(error);
     }

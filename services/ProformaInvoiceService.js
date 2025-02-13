@@ -8,17 +8,17 @@ module.exports = () => {
    * @returns
    */
   const createProforma = async (payload) => {
-    const { InvoiceItems, InvoiceTerms, ...rest } = payload;
+    const { ProformaItems, ProformaTerms, ...rest } = payload;
 
     const proforma = await db.ProformaInvoices.create(rest);
 
-    const _customFields = InvoiceItems.map((item) => ({
+    const _customFields = ProformaItems.map((item) => ({
       ...item,
       ProformaInvoiceId: proforma.id,
     }));
     const items = await db.ProformaItems.bulkCreate(_customFields);
 
-    const _termFields = InvoiceTerms.map((item) => ({
+    const _termFields = ProformaTerms.map((item) => ({
       ...item,
       ProformaInvoiceId: proforma.id,
     }));

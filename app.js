@@ -19,6 +19,8 @@ var purchaseOrderRouter = require("./routes/purchaseOrders");
 var profileRouter = require("./routes/profile");
 var itemRouter = require("./routes/item");
 var termRouter = require("./routes/terms");
+var roleRouter = require("./routes/roles");
+var permissionRouter = require("./routes/permissions");
 
 var app = express();
 
@@ -47,6 +49,8 @@ app.use("/purchase-orders", purchaseOrderRouter);
 app.use("/profile", profileRouter);
 app.use("/item", itemRouter);
 app.use("/terms", termRouter);
+app.use("/roles", roleRouter);
+app.use("/permissions", permissionRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
